@@ -44,12 +44,13 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
+            pm2 stop dabot
             cd ~/dabot_v2
             git pull origin master
             npm install # --production
             npm run build
             cd dist
-            pm2 restart dabot
+            pm2 start main.js --name "dabot" -- config.json
         
   
     
