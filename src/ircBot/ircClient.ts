@@ -35,6 +35,11 @@ export class IrcClient implements IIrcClient {
     this.client.addListener("message", (fromUser: string, toChannel: string, message: string, _) => {
       fromUser = fromUser.toLowerCase();
 
+      // TODO temporary
+      if (message === '!logs'){
+        this.client.say(toChannel, "http://108.61.178.189:4121/");
+      }
+
       // check notes for user
       // create message
         // can be command or normal message
