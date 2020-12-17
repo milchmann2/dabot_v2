@@ -41,13 +41,13 @@ export class WebServer implements IWebServer {
   }
 
   private setupHandlers(): void {
-    this.app.get('/login', this.checkNotAuthenticated, (req, res) => {
+    this.app.get('/', this.checkNotAuthenticated, (req, res) => {
       res.render('login.ejs');
     });
 
-    this.app.post('/login', this.checkNotAuthenticated, passport.authenticate('local', {
+    this.app.post('/', this.checkNotAuthenticated, passport.authenticate('local', {
       successRedirect: '/logs',
-      failureRedirect: '/login',
+      failureRedirect: '/',
       failureFlash: true
     }));
 
@@ -64,7 +64,7 @@ export class WebServer implements IWebServer {
 
     this.app.delete('/logout', (req, res) => {
       req.logOut();
-      res.redirect('/login');
+      res.redirect('/');
     })
   }
 
@@ -79,7 +79,7 @@ export class WebServer implements IWebServer {
       return next();
     }
 
-    res.redirect('/login');
+    res.redirect('/');
   }
 
   private checkNotAuthenticated(req, res, next) {
