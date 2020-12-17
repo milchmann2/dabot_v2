@@ -44,12 +44,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/node-github-demo
+            cd ~/dabot_v2
             git pull origin master
-            npm install --production
+            npm install # --production
             npm run build
             cd dist
-            pm2 restart node-app
+            pm2 restart dabot_v2
         
   
     
