@@ -45,6 +45,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             pm2 stop dabot
+            eval $(ssh-agent)
             cd ~/dabot_v2
             git pull origin master
             npm install # --production
