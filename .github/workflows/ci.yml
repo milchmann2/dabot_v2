@@ -46,6 +46,7 @@ jobs:
           script: |
             pm2 stop dabot
             eval $(ssh-agent)
+            ssh-add ~/.ssh/github
             cd ~/dabot_v2
             git pull origin master
             npm install # --production
