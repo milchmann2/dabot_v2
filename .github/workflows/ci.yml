@@ -49,7 +49,7 @@ jobs:
             npm install # --production
             npm run build
             cd dist
-            pm2 restart dabot_v2
+            pm2 restart dabot
         
   
     
