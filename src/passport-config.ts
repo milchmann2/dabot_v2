@@ -4,10 +4,7 @@ import { PassportStatic } from 'passport';
 
 function initialize(passport: PassportStatic, secrets: any): void {
   const authenticateUser = async (user, password, done) => {
-    console.log('init', password, done);
     try {
-      const a = await bcrypt.hash(password, 10);
-      console.log(password, secrets.password, a);
       if (await bcrypt.compare(password, secrets.password)){
         return done(null, secrets.password);
       } else {
