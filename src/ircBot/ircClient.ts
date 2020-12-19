@@ -45,6 +45,7 @@ export class IrcClient implements IIrcClient {
       // TODO temporary
       if (message === '!logs'){
         this.client.say(toChannel, "http://108.61.178.189:4121/");
+        this.db.Log(this.config.botName, toChannel, message)
       }
 
       const urlExpression = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi;
@@ -58,7 +59,7 @@ export class IrcClient implements IIrcClient {
             const duration = this.youtubeDurationToTime(body['items'][0]['contentDetails']['duration']);
             const youtubeMessage = `[YT] ${body['items'][0]['snippet']['title']} [${duration}]`;
             this.client.say(toChannel, youtubeMessage);
-            console.log(body['items'][0]['snippet']['title']);
+            this.db.Log(this.config.botName, toChannel, message)
           });
         }
       });
