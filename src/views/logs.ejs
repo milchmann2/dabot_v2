@@ -1,5 +1,33 @@
-<h1>LOGS:</h1><br>
+<h1>сообщения от моих товарищей:</h1><br>
+<% userColors = {} %>
+<% const timezoneOffset = (new Date()).getTimezoneOffset() * 60000 %>
 <% messages.forEach(function(message){ %>
-  <div> <%= message %></div>
-  <br>
-  <% }) %>
+  <% let adjustedTime = undefined; %>
+  <% if (message.datetime !== undefined) { %>
+    <% const utcTime = new Date(message.datetime); %>
+    <% adjustedTime = new Date(utcTime.getTime() + timezoneOffset); %>
+  <% } %>
+  <div style="text-align: left;">
+    <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `[ ${adjustedTime.toISOString()} ] ` %></div>
+    <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `${message.user}: ` %></div>
+    <div style="display:inline;" > <%= `${message.message}` %></div>
+  </div>
+<% }) %>
+
+
+ <%
+
+    function getRandomColor(user) {
+
+
+        if (!(user in userColors)){
+          var letters = '0123456789ABCDEF';
+          var color = '#';
+          for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          userColors[user] = color;
+      }
+      return userColors[user];
+    }
+%>

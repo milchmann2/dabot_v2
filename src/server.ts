@@ -53,9 +53,9 @@ export class WebServer implements IWebServer {
 
     this.app.get('/logs', this.checkAuthenticated, (req, res) => {
       this.database.Get((rows) => {
-        const logs: string[] = [];
+        const logs: any[] = [];
         rows.forEach(x => {
-          logs.push(x.user + ': ' + x.message);
+          logs.push({datetime: x.datetime_text, user: x.user, message: x.message});
         });
 
         res.render('logs.ejs', { messages: logs });

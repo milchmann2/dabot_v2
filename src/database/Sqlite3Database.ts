@@ -14,12 +14,12 @@ export class Sqlite3Database implements IDataPersistence{
 
       console.log('Connected to SQlite database logs.db.');
 
-      this.db.run('CREATE TABLE IF NOT EXISTS Logs(user text, message text)');
+      this.db.run('CREATE TABLE IF NOT EXISTS Logs(datetime_text text, user text, message text)');
     });
 
   }
 
-  public Get(callback: any) {
+  public Get(callback: any): void {
     const sql = `SELECT * FROM Logs`;
     this.db.all(sql, [], (err, rows) => {
       if (err) {
@@ -30,7 +30,7 @@ export class Sqlite3Database implements IDataPersistence{
   }
 
   public Log(fromUser: string, toChannel: string, message: string): void {
-    this.db.run(`INSERT INTO Logs(user, message) VALUES(?, ?)`, [fromUser, message], function(err) {
+    this.db.run(`INSERT INTO Logs(datetime_text, user, message) VALUES(?, ?, ?)`, [(new Date().toUTCString()), fromUser, message], function(err) {
       if (err) {
         return console.log(err.message);
       }
