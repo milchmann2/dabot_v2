@@ -75,18 +75,22 @@ export class WebServer implements IWebServer {
   }
 
   private checkAuthenticated(req, res, next) {
+    console.log('checkauth')
     if (req.isAuthenticated()) {
+      console.log('checkauth is')
       return next();
     }
-
+    console.log('checkauth is not')
     res.redirect('/');
   }
 
   private checkNotAuthenticated(req, res, next) {
+    console.log('checknot')
     if (req.isAuthenticated()) {
-      return res.redirect('/');
+      console.log('checknot is')
+      return res.redirect('/logs');
     }
-
+    console.log('checknot is not')
     next();
   }
 }
