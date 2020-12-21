@@ -12,16 +12,15 @@ export interface IWebServer {
 
 export class WebServer implements IWebServer {
 
-  app: express.Express;
-  port: number;
-  database: IDataPersistence;
+  private readonly app: express.Express;
+  private readonly port: number;
+  private readonly database: IDataPersistence;
 
   constructor (database: IDataPersistence) {
     this.database = database;
 
     this.app = express();
     this.port = 4121;//Number(process.env.PORT) || 4000;
-    // check if this works
 
     const secrets: {[key: string]: any} = require('../password.json');
     initializePassport(passport, secrets);
@@ -75,22 +74,16 @@ export class WebServer implements IWebServer {
   }
 
   private checkAuthenticated(req, res, next) {
-    console.log('checkauth')
     if (req.isAuthenticated()) {
-      console.log('checkauth is')
       return next();
     }
-    console.log('checkauth is not')
     res.redirect('/');
   }
 
   private checkNotAuthenticated(req, res, next) {
-    console.log('checknot')
     if (req.isAuthenticated()) {
-      console.log('checknot is')
       return res.redirect('/logs');
     }
-    console.log('checknot is not')
     next();
   }
 }

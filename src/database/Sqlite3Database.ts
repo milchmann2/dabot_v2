@@ -3,7 +3,7 @@ import * as Sqlite3 from 'sqlite3';
 
 export class Sqlite3Database implements IDataPersistence{
 
-  db: Sqlite3.Database;
+  private readonly db: Sqlite3.Database;
 
   constructor() {
     // in memory db: ':memory:'

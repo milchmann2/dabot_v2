@@ -15,10 +15,11 @@ export class IrcConfig {
 }
 
 export class IrcClient implements IIrcClient {
-  client: irc.Client;
-  config: IrcConfig;
-  db: IDataPersistence;
-  api_key: string;
+
+  private client: irc.Client;
+  private readonly config: IrcConfig;
+  private readonly db: IDataPersistence;
+  private readonly api_key: string;
 
   constructor(config: IrcConfig, db: IDataPersistence){
     this.config = config;
