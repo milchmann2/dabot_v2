@@ -20,7 +20,7 @@ export class Sqlite3Database implements IDataPersistence{
   }
 
   public Get(callback: any): void {
-    const sql = `SELECT * FROM Logs WHERE datetime_text >= date('now', '-1 days')`;
+    const sql = `SELECT * FROM Logs WHERE datetime_text >= datetime('now', '-1 minutes')`;
     this.db.all(sql, [], (err, rows) => {
       if (err) {
         throw err;
@@ -30,7 +30,10 @@ export class Sqlite3Database implements IDataPersistence{
   }
 
   public Log(fromUser: string, toChannel: string, message: string): void {
-    this.db.run(`INSERT INTO Logs(datetime_text, user, message) VALUES(?, ?, ?)`, [(new Date().toUTCString()), fromUser, message], function(err) {
+    const datetime = new Date().toISOString().split('T');
+    const millisecondIdx = datetime[1].lastIndexOf('.');
+    const utcTime = `${datetime[0]} ${datetime[1].substring(0, millisecondIdx)}`;
+    this.db.run(`INSERT INTO Logs(datetime_text, user, message) VALUES(?, ?, ?)`, [utcTime, fromUser, message], function(err) {
       if (err) {
         return console.log(err.message);
       }

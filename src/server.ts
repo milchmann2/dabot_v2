@@ -56,7 +56,6 @@ export class WebServer implements IWebServer {
         rows.forEach(x => {
           logs.push({datetime: x.datetime_text, user: x.user, message: x.message});
         });
-
         res.render('logs.ejs', { messages: logs });
       });
     })
