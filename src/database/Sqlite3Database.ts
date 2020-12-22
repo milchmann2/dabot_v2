@@ -20,7 +20,7 @@ export class Sqlite3Database implements IDataPersistence{
   }
 
   public Get(callback: any): void {
-    const sql = `SELECT * FROM Logs WHERE datetime_text >= datetime('now', '-1 minutes')`;
+    const sql = `SELECT * FROM Logs WHERE datetime_text >= datetime('now', '-1 days')`;
     this.db.all(sql, [], (err, rows) => {
       if (err) {
         throw err;
