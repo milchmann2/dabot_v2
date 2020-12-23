@@ -4,8 +4,13 @@ import { IIrcClient, IrcClient, IrcConfig } from './ircBot/ircClient';
 import { IWebServer, WebServer } from './server';
 import * as fs from 'fs';
 
+try{
+  startServer();
 
-startServer();
+}
+catch (e){
+  console.log(e);
+}
 
 function startServer() {
   if (process.argv.length < 3) {
