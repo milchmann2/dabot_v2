@@ -10,24 +10,38 @@
   <div style="text-align: left;">
     <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `[ ${adjustedTime.toISOString()} ] ` %></div>
     <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `${message.user}: ` %></div>
-    <div style="display:inline;" > <%= `${message.message}` %></div>
+    <div class="message" style="display:inline;" > <%= `${message.message}` %></div>
   </div>
 <% }) %>
 
+<script>
+  function linkify(text) {
+    const urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(urlRegex, (url) => {
+        return '<a href="' + url + '">' + url + '</a>';
+    });
+  }
 
- <%
+  function checkMessagesForLinks(){
+    const elements = document.getElementsByClassName("message");
+    Array.from(elements).forEach(element => {
+      element.innerHTML = linkify(element.innerHTML);
+    });
+  };
 
-    function getRandomColor(user) {
+  checkMessagesForLinks();
+</script>
 
-
-        if (!(user in userColors)){
-          var letters = '0123456789ABCDEF';
-          var color = '#';
-          for (var i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 16)];
-          }
-          userColors[user] = color;
-      }
-      return userColors[user];
+<%
+  function getRandomColor(user) {
+      if (!(user in userColors)){
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        userColors[user] = color;
     }
+    return userColors[user];
+  }
 %>
