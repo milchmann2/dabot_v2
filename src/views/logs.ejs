@@ -1,20 +1,27 @@
 <h1>сообщения от моих товарищей:</h1><br>
-<% userColors = {} %>
-<% const timezoneOffset = (new Date()).getTimezoneOffset() * 60000 %>
 <% messages.forEach(function(message){ %>
-  <% let adjustedTime = undefined; %>
-  <% if (message.datetime !== undefined) { %>
-    <% const utcTime = new Date(message.datetime); %>
-    <% adjustedTime = new Date(utcTime.getTime() + timezoneOffset); %>
-  <% } %>
   <div style="text-align: left;">
-    <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `[ ${adjustedTime.toISOString()} ] ` %></div>
-    <div style="display:inline; color: <%= getRandomColor(message.user); %>"> <%= `${message.user}: ` %></div>
+    <div class="<%=message.user%> time" style="display:inline;"> <%= `${message.datetime}` %></div>
+    <div class="<%=message.user%>" style="display:inline;"> <%= `${message.user}: ` %></div>
     <div class="message" style="display:inline;" > <%= `${message.message}` %></div>
   </div>
 <% }) %>
 
 <script>
+  userColors = {}
+
+  function getRandomColor(user) {
+    if (!(user in userColors)){
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      userColors[user] = color;
+    }
+    return userColors[user];
+  }
+
   function linkify(text) {
     const urlRegex =/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     return text.replace(urlRegex, (url) => {
@@ -22,26 +29,35 @@
     });
   }
 
-  function checkMessagesForLinks(){
-    const elements = document.getElementsByClassName("message");
+  function iterateAllDivs(){
+    const elements = document.getElementsByTagName("div");
     Array.from(elements).forEach(element => {
-      element.innerHTML = linkify(element.innerHTML);
+      if (element.className){
+        if (element.className === "message"){
+          element.innerHTML = linkify(element.innerHTML);
+        }
+        else {
+          const usr = element.className.split(' ')[0]
+          element.style.color = getRandomColor(usr);
+        }
+      }
     });
   };
 
-  checkMessagesForLinks();
+  function changeToLocalTime() {
+    const elements = document.getElementsByClassName("time");
+    Array.from(elements).forEach(element => {
+      const timezoneOffset = (new Date()).getTimezoneOffset() * 60000;
+      let adjustedTime = undefined;
+      const utcTime = new Date(element.innerHTML);
+      console.log(timezoneOffset, element.innerHTML);
+      element.innerHTML =  `[ ${new Date(utcTime.getTime() - timezoneOffset).toLocaleString()} ] `;
+    });
+  }
+
+  iterateAllDivs();
+  changeToLocalTime();
 </script>
 
-<%
-  function getRandomColor(user) {
-      if (!(user in userColors)){
-        var letters = '0123456789ABCDEF';
-        var color = '#';
-        for (var i = 0; i < 6; i++) {
-          color += letters[Math.floor(Math.random() * 16)];
-        }
-        userColors[user] = color;
-    }
-    return userColors[user];
-  }
-%>
+
+
