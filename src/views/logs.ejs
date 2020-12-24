@@ -49,8 +49,7 @@
     Array.from(elements).forEach(element => {
       const timezoneOffset = (new Date()).getTimezoneOffset() * 60000;
       let adjustedTime = undefined;
-      const utcTime = new Date(element.innerHTML);
-      console.log(timezoneOffset, element.innerHTML);
+      const utcTime = new Date(element.innerHTML.replace(/-/g,'/'));
       element.innerHTML =  `[ ${new Date(utcTime.getTime() - timezoneOffset).toLocaleString()} ] `;
     });
   }
@@ -58,6 +57,7 @@
   iterateAllDivs();
   changeToLocalTime();
 </script>
+
 
 
 
