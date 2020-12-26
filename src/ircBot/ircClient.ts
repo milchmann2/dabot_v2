@@ -1,9 +1,8 @@
 import * as irc from 'irc';
 import { IDataPersistence } from '../database/IDataPersistence';
-import getYouTubeID from 'get-youtube-id';
-
 import { ICommandsController, CommandsController } from './CommandsController';
 import { IrcMessage } from './IrcMessage';
+import { EventEmitter } from 'events';
 
 export class IrcConfig {
   constructor(public botName: string, public server: string, public channel: string)
@@ -11,13 +10,15 @@ export class IrcConfig {
   }
 }
 
-export interface IIrcClient {
+export declare interface IrcClient {
   connect(): boolean;
   say(toChannel: string, message: string): void;
+  on(event: 'message', listener: (ircMessage: IrcMessage) => void): this;
+  //on(event: string, listener: Function): this;
 }
 
 
-export class IrcClient implements IIrcClient {
+export class IrcClient extends EventEmitter {
 
   private client: irc.Client;
   private readonly config: IrcConfig;
@@ -26,6 +27,8 @@ export class IrcClient implements IIrcClient {
   private readonly commandsController: ICommandsController;
 
   constructor(config: IrcConfig, db: IDataPersistence){
+
+    super();
     this.config = config;
     this.db = db;
     const secrets: {[key: string]: any} = require('../../password.json');
@@ -50,7 +53,7 @@ export class IrcClient implements IIrcClient {
 
   private addListeners(): void {
     this.client.addListener("message", (fromUser: string, toChannel: string, message: string, _) => {
-      this.commandsController.process(new IrcMessage(fromUser, toChannel, message));
+      this.emit('message', new IrcMessage(fromUser, toChannel, message));
     });
   }
 }

@@ -1,6 +1,6 @@
 import { IDataPersistence } from './database/IDataPersistence';
 import { Sqlite3Database } from './database/Sqlite3Database';
-import { IIrcClient, IrcClient, IrcConfig } from './ircBot/ircClient';
+import { IrcClient, IrcConfig } from './ircBot/ircClient';
 import { IWebServer, WebServer } from './server';
 import * as fs from 'fs';
 
@@ -17,14 +17,15 @@ function startServer() {
     console.log("Not enough parameters. Config file missing!");
   }
 
-  const configPath = "./" + process.argv[2];
+  const configPath = "./" + process.argv[2]; //+ 'config.json';
+  //const configPath = "./" + 'config.json'
   const config = getConfig(configPath);
   if (config == null){
     return;
   }
 
   const database: IDataPersistence = new Sqlite3Database();
-  const ircClient: IIrcClient = new IrcClient(config, database);
+  const ircClient: IrcClient = new IrcClient(config, database);
   const webServer: IWebServer = new WebServer(database);
 
   ircClient.connect();

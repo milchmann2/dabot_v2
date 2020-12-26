@@ -1,57 +1,63 @@
 import getYouTubeID from "get-youtube-id";
 import { IDataPersistence } from "../database/IDataPersistence";
-import { IIrcClient, IrcConfig } from "./ircClient";
+import { IrcClient, IrcConfig } from "./ircClient";
 import { IrcMessage } from "./IrcMessage";
 import request = require('request');
 
+export interface CommandProperties {
+  [name: string]: any;
+}
+
 export interface ICommand {
-  execute(): void;
+  execute(properties: CommandProperties): void;
 }
 
 export class LogsBotCommand implements ICommand {
 
-  private readonly ircMessage: IrcMessage;
-  private readonly ircClient: IIrcClient;
+  private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
 
-  constructor(ircMessage: IrcMessage, ircClient: IIrcClient, database: IDataPersistence, ircConfig: IrcConfig) {
+  constructor(ircClient: IrcClient, database: IDataPersistence, ircConfig: IrcConfig) {
 
-    this.ircMessage = ircMessage;
     this.ircClient = ircClient;
     this.database = database;
     this.ircConfig = ircConfig;
   }
 
-  execute(): void {
+  execute(properties: CommandProperties): void {
+
+    const toChannel = properties['toChannel'] as string;
+
     const webUrl = "http://108.61.178.189:4121/";
-    this.ircClient.say(this.ircMessage.toChannel, webUrl);
-    this.database.Log(this.ircConfig.botName, this.ircMessage.toChannel, webUrl)
+    this.ircClient.say(toChannel, webUrl);
+    this.database.Log(this.ircConfig.botName, toChannel, webUrl)
   }
 }
 
 export class YoutubeCommand implements ICommand {
 
   private readonly ircMessage: IrcMessage;
-  private readonly ircClient: IIrcClient;
+  private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
   private readonly links: string[];
   private readonly youtubeApiKey: string
 
+  constructor(ircClient: IrcClient, database: IDataPersistence, ircConfig: IrcConfig, youtubeApiKey: string) {
 
-  constructor(links: string[], ircMessage: IrcMessage, ircClient: IIrcClient, database: IDataPersistence, ircConfig: IrcConfig, youtubeApiKey: string) {
-
-    this.ircMessage = ircMessage;
     this.ircClient = ircClient;
     this.database = database;
     this.ircConfig = ircConfig;
-    this.links = links;
     this.youtubeApiKey = youtubeApiKey;
   }
 
-  execute(): void {
-    this.links.forEach(url => {
+  execute(properties: CommandProperties): void {
+
+    const links = properties['links'] as string[];
+    const toChannel = properties['toChannel'] as string;
+
+    links.forEach(url => {
       const id = getYouTubeID(url, { fuzzy: false });
       //console.log('id', id);
       if (id !== null){
@@ -59,8 +65,8 @@ export class YoutubeCommand implements ICommand {
           if (err) { return console.log(err); }
           const duration = this.youtubeDurationToTime(body['items'][0]['contentDetails']['duration']);
           const youtubeMessage = `[YT] ${body['items'][0]['snippet']['title']} [${duration}]`;
-          this.ircClient.say(this.ircMessage.toChannel, youtubeMessage);
-          this.database.Log(this.ircConfig.botName, this.ircMessage.toChannel, youtubeMessage)
+          this.ircClient.say(toChannel, youtubeMessage);
+          this.database.Log(this.ircConfig.botName, toChannel, youtubeMessage)
         });
       }
     });
@@ -68,6 +74,7 @@ export class YoutubeCommand implements ICommand {
 
   // https://gist.github.com/jrtaylor-com/42883b0e28a45b8362e7
   private youtubeDurationToTime(duration: string): string {
+
     let hours   = 0;
     let minutes = 0;
     let seconds = 0;
@@ -103,16 +110,19 @@ export class YoutubeCommand implements ICommand {
 
 export class MessageCommand implements ICommand {
 
-  private readonly ircMessage: IrcMessage;
   private readonly database: IDataPersistence;
 
-  constructor(ircMessage: IrcMessage, database: IDataPersistence) {
+  constructor(database: IDataPersistence) {
 
-    this.ircMessage = ircMessage;
     this.database = database;
   }
 
-  execute(): void {
-    this.database.Log(this.ircMessage.fromUser, this.ircMessage.toChannel, this.ircMessage.message)
+  execute(properties: CommandProperties): void {
+
+    const fromUser = properties['fromUser'] as string;
+    const toChannel = properties['toChannel'] as string;
+    const message = properties['message'] as string;
+
+    this.database.Log(fromUser, toChannel, message)
   }
 }
