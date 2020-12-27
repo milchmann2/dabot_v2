@@ -52,7 +52,7 @@ export class IrcClient extends EventEmitter {
   }
 
   private addListeners(): void {
-    this.client.addListener("message", (fromUser: string, toChannel: string, message: string, _) => {
+    this.client.addListener("message", (fromUser: string, toChannel: string, message: string) => {
       this.emit('message', new IrcMessage(fromUser, toChannel, message));
     });
   }
