@@ -22,19 +22,11 @@ export class IrcClient extends EventEmitter {
 
   private client: irc.Client;
   private readonly config: IrcConfig;
-  private readonly db: IDataPersistence;
-  private readonly api_key: string;
-  private readonly commandsController: ICommandsController;
 
-  constructor(config: IrcConfig, db: IDataPersistence){
+  constructor(config: IrcConfig){
 
     super();
     this.config = config;
-    this.db = db;
-    const secrets: {[key: string]: any} = require('../../password.json');
-    this.api_key = secrets.api_key;
-
-    this.commandsController = new CommandsController(this.db, this, config, this.api_key);
   }
 
   public connect(): boolean {

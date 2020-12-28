@@ -3,6 +3,7 @@ import { Sqlite3Database } from './database/Sqlite3Database';
 import { IrcClient, IrcConfig } from './ircBot/ircClient';
 import { IWebServer, WebServer } from './server';
 import * as fs from 'fs';
+import { CommandsController } from './ircBot/CommandsController';
 
 try{
   startServer();
@@ -25,8 +26,11 @@ function startServer() {
   }
 
   const database: IDataPersistence = new Sqlite3Database();
-  const ircClient: IrcClient = new IrcClient(config, database);
+  const ircClient: IrcClient = new IrcClient(config);
   const webServer: IWebServer = new WebServer(database);
+  const secrets: {[key: string]: any} = require('../password.json');
+  const api_key = secrets.api_key;
+  const commandsController = new CommandsController(database, ircClient, config, api_key);
 
   ircClient.connect();
   console.log("irc connected")
