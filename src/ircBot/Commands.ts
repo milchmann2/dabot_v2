@@ -117,12 +117,26 @@ export class MessageCommand implements ICommand {
     this.database = database;
   }
 
-  execute(properties: CommandProperties): void {
-
-    const fromUser = properties['fromUser'] as string;
-    const toChannel = properties['toChannel'] as string;
-    const message = properties['message'] as string;
+  execute({fromUser, toChannel, message}: CommandProperties): void {
 
     this.database.Log(fromUser, toChannel, message)
+  }
+}
+
+export class UserActivityCommand implements ICommand {
+
+  private readonly database: IDataPersistence;
+  private readonly ircConfig: IrcConfig;
+
+  constructor(database: IDataPersistence, ircConfig: IrcConfig) {
+
+    this.database = database;
+    this.ircConfig = ircConfig;
+  }
+
+  execute({fromUser, toChannel, message}: CommandProperties): void {
+
+    const userActivity = `${fromUser} ${message}`;
+    this.database.Log(this.ircConfig.botName, toChannel, userActivity)
   }
 }

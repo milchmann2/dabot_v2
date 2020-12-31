@@ -1,5 +1,5 @@
 import { IDataPersistence } from "../database/IDataPersistence";
-import { ICommand, LogsBotCommand, MessageCommand, YoutubeCommand } from "./Commands";
+import { ICommand, LogsBotCommand, MessageCommand, UserActivityCommand, YoutubeCommand } from "./Commands";
 import { IrcClient, IrcConfig } from "./ircClient";
 import { IrcMessage } from "./IrcMessage";
 
@@ -26,12 +26,14 @@ export class CommandsController implements ICommandsController {
     this.loadCommands();
 
     this.ircClient.on("message", msg => this.process(msg));
+    this.ircClient.on("userActivity", msg => this.processUserActivity(msg));
   }
 
   private loadCommands() {
     this.commands['logs'] = new LogsBotCommand(this.ircClient, this.database, this.ircConfig);
     this.commands['youtube'] = new YoutubeCommand(this.ircClient, this.database, this.ircConfig, this.youtubeApiKey);
     this.commands['message'] = new MessageCommand(this.database);
+    this.commands['userActivity'] = new UserActivityCommand(this.database, this.ircConfig);
   }
 
   public process(ircMessage: IrcMessage): void {
@@ -61,5 +63,14 @@ export class CommandsController implements ICommandsController {
     // create message
       // can be command or normal message
     // process message
+  }
+
+  public processUserActivity(ircMessage: IrcMessage): void {
+
+    this.commands['userActivity'].execute({
+      'fromUser': ircMessage.fromUser,
+      'toChannel': ircMessage.toChannel,
+      'message': ircMessage.message
+    });
   }
 }

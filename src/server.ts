@@ -2,7 +2,6 @@ import express = require('express');
 import flash = require('express-flash');
 import session = require('express-session');
 import passport = require("passport");
-import * as bcrypt from 'bcrypt';
 import { initializePassport } from './passport-config';
 import { IDataPersistence } from './database/IDataPersistence';
 

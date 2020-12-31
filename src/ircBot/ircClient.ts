@@ -14,6 +14,7 @@ export declare interface IrcClient {
   connect(): boolean;
   say(toChannel: string, message: string): void;
   on(event: 'message', listener: (ircMessage: IrcMessage) => void): this;
+  on(event: 'userActivity', listener: (ircMessage: IrcMessage) => void): this;
   //on(event: string, listener: Function): this;
 }
 
@@ -46,6 +47,18 @@ export class IrcClient extends EventEmitter {
   private addListeners(): void {
     this.client.addListener("message", (fromUser: string, toChannel: string, message: string) => {
       this.emit('message', new IrcMessage(fromUser, toChannel, message));
+    });
+
+    this.client.addListener("join", (channel: string, user: string, info: any) => {
+      this.emit('userActivity', new IrcMessage(user, channel, "JOIN"));
+    });
+
+    this.client.addListener("quit", (channel: string, user: string, info: any) => {
+      this.emit('userActivity', new IrcMessage(user, channel, "QUIT"));
+    });
+
+    this.client.addListener("part", (channel: string, user: string, info: any) => {
+      this.emit('userActivity', new IrcMessage(user, channel, "PART"));
     });
   }
 }
