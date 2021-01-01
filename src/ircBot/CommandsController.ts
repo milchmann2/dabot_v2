@@ -1,6 +1,5 @@
-import { IDataPersistence } from "../database/IDataPersistence";
-import { ICommand, LogsBotCommand, MessageCommand, UserActivityCommand, YoutubeCommand } from "./Commands";
-import { IrcClient, IrcConfig } from "./ircClient";
+import { ICommandsFactory } from "./CommandsFactory";
+import { IrcClient } from "./ircClient";
 import { IrcMessage } from "./IrcMessage";
 
 
@@ -10,42 +9,28 @@ export interface ICommandsController {
 
 export class CommandsController implements ICommandsController {
 
-  private readonly database: IDataPersistence;
   private readonly ircClient: IrcClient;
-  private readonly ircConfig: IrcConfig;
-  private readonly youtubeApiKey: string;
-  private readonly commands: {[name: string]: ICommand} = {};
+  private readonly commands: ICommandsFactory;
 
-  constructor(database: IDataPersistence, ircClient: IrcClient, ircConfig: IrcConfig, youtubeApiKey: string) {
+  constructor(ircClient: IrcClient, commands: ICommandsFactory) {
 
-    this.database = database;
     this.ircClient = ircClient;
-    this.ircConfig = ircConfig;
-    this.youtubeApiKey = youtubeApiKey;
-
-    this.loadCommands();
+    this.commands = commands;
 
     this.ircClient.on("message", msg => this.process(msg));
     this.ircClient.on("userActivity", msg => this.processUserActivity(msg));
   }
 
-  private loadCommands() {
-    this.commands['logs'] = new LogsBotCommand(this.ircClient, this.database, this.ircConfig);
-    this.commands['youtube'] = new YoutubeCommand(this.ircClient, this.database, this.ircConfig, this.youtubeApiKey);
-    this.commands['message'] = new MessageCommand(this.database);
-    this.commands['userActivity'] = new UserActivityCommand(this.database, this.ircConfig);
-  }
-
   public process(ircMessage: IrcMessage): void {
 
-    this.commands['message'].execute({
+    this.commands.get('message').execute({
       'fromUser': ircMessage.fromUser,
       'toChannel': ircMessage.toChannel,
       'message': ircMessage.message
     });
 
     if (ircMessage.message === '!logs'){
-      this.commands['logs'].execute({
+      this.commands.get('logs').execute({
         'toChannel': ircMessage.toChannel
       });
     }
@@ -53,7 +38,7 @@ export class CommandsController implements ICommandsController {
     const urlExpression = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi;
     const matches = ircMessage.message.match(urlExpression) || [];
     if (matches.length > 0){
-      this.commands['youtube'].execute({
+      this.commands.get('youtube').execute({
         'links': matches,
         'toChannel': ircMessage.toChannel
       });
@@ -67,7 +52,7 @@ export class CommandsController implements ICommandsController {
 
   public processUserActivity(ircMessage: IrcMessage): void {
 
-    this.commands['userActivity'].execute({
+    this.commands.get('userActivity').execute({
       'fromUser': ircMessage.fromUser,
       'toChannel': ircMessage.toChannel,
       'message': ircMessage.message

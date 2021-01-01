@@ -4,6 +4,7 @@ import { IrcClient, IrcConfig } from './ircBot/ircClient';
 import { IWebServer, WebServer } from './server';
 import * as fs from 'fs';
 import { CommandsController } from './ircBot/CommandsController';
+import { CommandsFactory } from './ircBot/CommandsFactory';
 
 try{
   startServer();
@@ -30,7 +31,8 @@ function startServer() {
   const webServer: IWebServer = new WebServer(database);
   const secrets: {[key: string]: any} = require('../password.json');
   const api_key = secrets.api_key;
-  const commandsController = new CommandsController(database, ircClient, config, api_key);
+  const commandsFactory = new CommandsFactory(ircClient, database, config, api_key);
+  const commandsController = new CommandsController(ircClient, commandsFactory);
 
   ircClient.connect();
   console.log("irc connected")
