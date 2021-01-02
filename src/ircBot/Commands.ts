@@ -1,28 +1,55 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/no-namespace */
 import getYouTubeID from "get-youtube-id";
 import { IDataPersistence } from "../database/IDataPersistence";
 import { IrcClient, IrcConfig } from "./ircClient";
 import { IrcMessage } from "./IrcMessage";
 import request = require('request');
 
+export interface ICommand {
+  commandType: string;
+  execute(properties: CommandProperties): void;
+}
+
+// add a registry of the type you expect
+export namespace ICommand {
+  type Constructor<T> = {
+    new(...args: any[]): T;
+    readonly prototype: T;
+  }
+  const implementations: Constructor<ICommand>[] = [];
+  export function getImplementations(): Constructor<ICommand>[] {
+    return implementations;
+  }
+  export function register<T extends Constructor<ICommand>>(ctor: T) {
+    implementations.push(ctor);
+    return ctor;
+  }
+}
+
+
+export interface CommandDependencies {
+  [name: string]: any;
+}
+
 export interface CommandProperties {
   [name: string]: any;
 }
 
-export interface ICommand {
-  execute(properties: CommandProperties): void;
-}
 
-export class LogsBotCommand implements ICommand {
+@ICommand.register
+export class LogsBotCommand {
 
+  public readonly commandType = 'logs';
   private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
 
-  constructor(ircClient: IrcClient, database: IDataPersistence, ircConfig: IrcConfig) {
+  constructor(dependencies: CommandDependencies) {
 
-    this.ircClient = ircClient;
-    this.database = database;
-    this.ircConfig = ircConfig;
+    this.ircClient = dependencies.ircClient;
+    this.database = dependencies.database;
+    this.ircConfig = dependencies.ircConfig;
   }
 
   execute(properties: CommandProperties): void {
@@ -35,21 +62,21 @@ export class LogsBotCommand implements ICommand {
   }
 }
 
-export class YoutubeCommand implements ICommand {
+@ICommand.register
+export class YoutubeCommand {
 
-  private readonly ircMessage: IrcMessage;
+  public readonly commandType = 'youtube';
   private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
-  private readonly links: string[];
   private readonly youtubeApiKey: string
 
-  constructor(ircClient: IrcClient, database: IDataPersistence, ircConfig: IrcConfig, youtubeApiKey: string) {
+  constructor(dependencies: CommandDependencies) {
 
-    this.ircClient = ircClient;
-    this.database = database;
-    this.ircConfig = ircConfig;
-    this.youtubeApiKey = youtubeApiKey;
+    this.ircClient = dependencies.ircClient;
+    this.database = dependencies.database;
+    this.ircConfig = dependencies.ircConfig;
+    this.youtubeApiKey = dependencies.youtubeApiKey;
   }
 
   execute(properties: CommandProperties): void {
@@ -108,13 +135,15 @@ export class YoutubeCommand implements ICommand {
   }
 }
 
-export class MessageCommand implements ICommand {
+@ICommand.register
+export class MessageCommand {
 
+  public readonly commandType = 'message';
   private readonly database: IDataPersistence;
 
-  constructor(database: IDataPersistence) {
+  constructor(dependencies: CommandDependencies) {
 
-    this.database = database;
+    this.database = dependencies.database;
   }
 
   execute({fromUser, toChannel, message}: CommandProperties): void {
@@ -123,15 +152,17 @@ export class MessageCommand implements ICommand {
   }
 }
 
+@ICommand.register
 export class UserActivityCommand implements ICommand {
 
+  public readonly commandType = 'userActivity';
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
 
-  constructor(database: IDataPersistence, ircConfig: IrcConfig) {
+  constructor(dependencies: CommandDependencies) {
 
-    this.database = database;
-    this.ircConfig = ircConfig;
+    this.database = dependencies.database;
+    this.ircConfig = dependencies.ircConfig;
   }
 
   execute({fromUser, toChannel, message}: CommandProperties): void {

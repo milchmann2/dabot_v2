@@ -1,5 +1,5 @@
 import { IDataPersistence } from "../database/IDataPersistence";
-import { ICommand, LogsBotCommand, MessageCommand, UserActivityCommand, YoutubeCommand } from "./Commands";
+import { CommandDependencies, ICommand } from "./Commands";
 import { IrcClient, IrcConfig } from "./ircClient";
 
 
@@ -13,10 +13,18 @@ export class CommandsFactory implements ICommandsFactory {
   private readonly commands: {[name: string]: ICommand} = {};
 
   constructor(ircClient: IrcClient, database: IDataPersistence, ircConfig: IrcConfig, youtubeApiKey: string) {
-    this.commands.logs = new LogsBotCommand(ircClient, database, ircConfig);
-    this.commands.youtube = new YoutubeCommand(ircClient, database, ircConfig, youtubeApiKey);
-    this.commands.message = new MessageCommand(database);
-    this.commands.userActivity = new UserActivityCommand(database, ircConfig);
+
+    const commandsDependencies: CommandDependencies = {
+      ircClient,
+      database,
+      ircConfig,
+      youtubeApiKey
+    };
+
+    ICommand.getImplementations().forEach(commandCtor => {
+      const command = new commandCtor(commandsDependencies);
+      this.commands[command.commandType] = command;
+    })
   }
 
   get(name: string): ICommand {
