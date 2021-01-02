@@ -9,16 +9,11 @@ export interface ICommandsController {
 
 export class CommandsController implements ICommandsController {
 
-  private readonly ircClient: IrcClient;
   private readonly commands: ICommandsFactory;
 
-  constructor(ircClient: IrcClient, commands: ICommandsFactory) {
+  constructor(commands: ICommandsFactory) {
 
-    this.ircClient = ircClient;
     this.commands = commands;
-
-    this.ircClient.on("message", msg => this.process(msg));
-    this.ircClient.on("userActivity", msg => this.processUserActivity(msg));
   }
 
   public process(ircMessage: IrcMessage): void {

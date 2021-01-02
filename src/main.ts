@@ -32,7 +32,11 @@ function startServer() {
   const secrets: {[key: string]: any} = require('../password.json');
   const api_key = secrets.api_key;
   const commandsFactory = new CommandsFactory(ircClient, database, config, api_key);
-  const commandsController = new CommandsController(ircClient, commandsFactory);
+  const commandsController = new CommandsController(commandsFactory);
+
+  ircClient.on("message", msg => commandsController.process(msg));
+  ircClient.on("userActivity", msg => commandsController.processUserActivity(msg));
+
 
   ircClient.connect();
   console.log("irc connected")
