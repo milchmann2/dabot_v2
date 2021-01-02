@@ -24,9 +24,12 @@ export class CommandsController implements ICommandsController {
       'message': ircMessage.message
     });
 
-    if (ircMessage.message === '!logs'){
-      this.commands.get('logs').execute({
-        'toChannel': ircMessage.toChannel
+    if (ircMessage.message.startsWith('!')){
+      const split = ircMessage.message.split(' ');
+      const command = split[0].slice(1);
+      this.commands.get(command).execute({
+        'toChannel': ircMessage.toChannel,
+        'parameters': split.slice(1)
       });
     }
 

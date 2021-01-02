@@ -3,12 +3,17 @@
 import getYouTubeID from "get-youtube-id";
 import { IDataPersistence } from "../database/IDataPersistence";
 import { IrcClient, IrcConfig } from "./ircClient";
-import { IrcMessage } from "./IrcMessage";
 import request = require('request');
+import { ICommandsFactory } from "./CommandsFactory";
 
 export interface ICommand {
-  commandType: string;
+  name: string;
+  type: CommandType;
   execute(properties: CommandProperties): void;
+}
+
+export interface IUserCommand {
+  ircUsage: string;
 }
 
 // add a registry of the type you expect
@@ -27,6 +32,12 @@ export namespace ICommand {
   }
 }
 
+export enum CommandType {
+  UserCommand,
+  IrcCommand,
+  QueryCommand,
+  NullCommand
+}
 
 export interface CommandDependencies {
   [name: string]: any;
@@ -36,11 +47,25 @@ export interface CommandProperties {
   [name: string]: any;
 }
 
+@ICommand.register
+export class NullCommand {
+
+  public readonly name = 'null';
+  public readonly type = CommandType.NullCommand;
+
+  constructor(dependencies: CommandDependencies) {
+  }
+
+  execute(properties: CommandProperties): void {
+  }
+}
 
 @ICommand.register
-export class LogsBotCommand {
+export class LogsBotCommand implements IUserCommand {
 
-  public readonly commandType = 'logs';
+  public readonly name = 'logs';
+  public readonly type = CommandType.UserCommand;
+  public readonly ircUsage = "!logs"
   private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
@@ -65,7 +90,8 @@ export class LogsBotCommand {
 @ICommand.register
 export class YoutubeCommand {
 
-  public readonly commandType = 'youtube';
+  public readonly name = 'youtube';
+  public readonly type = CommandType.QueryCommand;
   private readonly ircClient: IrcClient;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
@@ -138,7 +164,8 @@ export class YoutubeCommand {
 @ICommand.register
 export class MessageCommand {
 
-  public readonly commandType = 'message';
+  public readonly name = 'message';
+  public readonly type = CommandType.IrcCommand;
   private readonly database: IDataPersistence;
 
   constructor(dependencies: CommandDependencies) {
@@ -153,9 +180,10 @@ export class MessageCommand {
 }
 
 @ICommand.register
-export class UserActivityCommand implements ICommand {
+export class UserActivityCommand {
 
-  public readonly commandType = 'userActivity';
+  public readonly name = 'userActivity';
+  public readonly type = CommandType.IrcCommand;
   private readonly database: IDataPersistence;
   private readonly ircConfig: IrcConfig;
 
@@ -169,5 +197,33 @@ export class UserActivityCommand implements ICommand {
 
     const userActivity = `${fromUser} ${message}`;
     this.database.Log(this.ircConfig.botName, toChannel, userActivity)
+  }
+}
+
+@ICommand.register
+export class HelpCommand implements IUserCommand {
+
+  public readonly name = 'help';
+  public readonly type = CommandType.UserCommand;
+  public readonly ircUsage = "!help"
+  private readonly ircClient: IrcClient;
+  private readonly database: IDataPersistence;
+  private readonly ircConfig: IrcConfig;
+  private readonly commandsFactory: ICommandsFactory;
+
+  constructor(dependencies: CommandDependencies) {
+
+    this.ircClient = dependencies.ircClient;
+    this.database = dependencies.database;
+    this.ircConfig = dependencies.ircConfig;
+    this.commandsFactory = dependencies.commandsFactory;
+  }
+
+  execute({toChannel}: CommandProperties): void {
+
+    const helpString = this.commandsFactory.helpString();
+
+    this.ircClient.say(toChannel, helpString);
+    this.database.Log(this.ircConfig.botName, toChannel, helpString)
   }
 }
