@@ -227,3 +227,34 @@ export class HelpCommand implements IUserCommand {
     this.database.Log(this.ircConfig.botName, toChannel, helpString)
   }
 }
+
+@ICommand.register
+export class AddUserCommand implements IUserCommand {
+
+  public readonly name = 'adduser';
+  public readonly type = CommandType.UserCommand;
+  public readonly ircUsage = "!adduser *user*"
+  private readonly ircClient: IrcClient;
+  private readonly database: IDataPersistence;
+  private readonly ircConfig: IrcConfig;
+  private readonly commandsFactory: ICommandsFactory;
+
+  constructor(dependencies: CommandDependencies) {
+
+    this.ircClient = dependencies.ircClient;
+    this.database = dependencies.database;
+    this.ircConfig = dependencies.ircConfig;
+    this.commandsFactory = dependencies.commandsFactory;
+  }
+
+  async execute({toChannel, parameters}: CommandProperties): Promise<void> {
+
+    const user = parameters[0];
+    let worked = "";
+    this.database.AddUser(user, user, (res) => {
+      worked = res;
+      this.ircClient.say(toChannel, worked);
+      this.database.Log(this.ircConfig.botName, toChannel, worked)
+    });
+  }
+}
